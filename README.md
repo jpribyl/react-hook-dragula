@@ -3,9 +3,10 @@
 [![npm version](https://badge.fury.io/js/react-hook-dragula.svg)](https://badge.fury.io/js/react-hook-dragula)
 
 Lightweight, strongly typed package with almost no dependencies. It uses
-Dragula and React Hooks to smoothly manage the DOM state.  For more details,
-take a look at the [example project]()
- or the [live demo]() of the example project.
+Dragula and React Hooks to smoothly manage the DOM state. It also adds a
+context store which allows you to pass the data back and forth between
+`Dragula` and `React`.  take a look at the [example project]() or the [live
+demo]() of the example project.
 
 ![Example of usage]()
 
@@ -52,11 +53,11 @@ yarn add react-hook-dragula
   options = {},
   dependencyList = [],
   ...props
-#### `options` Object, optional
+#### `options` `Object, optional`
 - Sets [Dragula options](https://github.com/bevacqua/dragula#usage). 
 - Default: Same as Dragula
 
-#### `on<Event>` Function, optional:
+#### `on<Event>` `Function, optional`:
 - Sets [Drake onEvent](https://github.com/bevacqua/dragula/blob/master/readme.markdown#drakeon-events)
 - Accepts all the same handlers as `Dragula`
 - Params are all passed through with names
@@ -74,6 +75,6 @@ Event Name | Listener Arguments               | Event Description
 `out`      | `el, container, source`          | `el` was dragged out of `container` or dropped, and originally came from `source`
 `cloned`   | `clone, original, type`          | DOM element `original` was cloned as `clone`, of `type` _(`'mirror'` or `'copy'`)_. Fired for mirror images and when `copy: true`
 
-#### `Other attributes`  HTMLProps<HTMLDivElement> optional
+#### `Other attributes`  `HTMLProps<HTMLDivElement>, optional`
 - All other props passed into this component will be directly translated onto the react component
 - This allows you to add css classes or other handlers, see usage examples above
