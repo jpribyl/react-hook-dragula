@@ -316,7 +316,7 @@ function useDragula<T>({
 }: UseDragulaParams<T>) {
   const [drake, setDrake] = useState<ReturnType<ExtendedDragula<T>>>();
   const [mutationCount, setMutationCount] = useState(0);
-  const [drakeNode, setDrakeNode] = useState();
+  const [drakeNode, setDragulaNode] = useState();
   useEffect(() => {
     const observer = new MutationObserver(() =>
       setMutationCount(mutationCount + 1)
@@ -334,9 +334,9 @@ function useDragula<T>({
   const drakeRef = useCallback(
     (node) => {
       if (node) {
-        setDrakeNode(node);
+        setDragulaNode(node);
         setDrake(
-          (reactDragula as unknown as ExtendedDragula<T>)([node], {
+          (reactDragula as unknown as ExtendedDragula<T>)([...node.children], {
             ...options,
             isContainer(el) {
               if (!options.isContainer) return false;
@@ -391,7 +391,11 @@ function useDragula<T>({
   return { drake, drakeRef };
 }
 
-function DragulaContainer<
+function DragulaContainer({ ...props }: HTMLProps<HTMLDivElement>) {
+  return <div {...props} />;
+}
+
+function Dragula<
   T = "draggableStore of unknown type T. Please specify type when rendering <DragulaContainer<T> {...props} />"
 >({
   onDrag,
@@ -455,8 +459,9 @@ function DragulaHandle<T>({
 
 export default function initializeDragula<T>() {
   return {
-    DragulaContainer: (props: DragulaContainerProps<T>) => (
-      <DragulaContainer<T> {...props} />
+    Dragula: (props: DragulaContainerProps<T>) => <Dragula<T> {...props} />,
+    DragulaContainer: (props: HTMLProps<HTMLDivElement>) => (
+      <DragulaContainer {...props} />
     ),
     Draggable: (props: DraggableProps<T>) => <Draggable<T> {...props} />,
     DragulaHandle: (props: DragulaHandleProps<T>) => (
