@@ -1,0 +1,22 @@
+/* prism.js colors */
+$color-manilla: #fbf2e0;
+$color-sail: #b3d4fc;
+$color-dusty-gray: #999;
+$color-fresh-eggplant: #905;
+$color-limeade: #690;
+$color-sepia-skin: #9a6e3a;
+$color-deep-cerulean: #07a;
+$color-cabaret: #dd4a68;
+$color-tangerine: #e90;
+
+:export {
+  colorTangerine: $color-tangerine;
+  colorCabaret: $color-cabaret;
+  colorDeepCerulean: $color-deep-cerulean;
+  colorSepiaSkin: $color-sepia-skin;
+  colorLimeade: $color-limeade;
+  colorFreshEggplant: $color-fresh-eggplant;
+  colorDustyGray: $color-dusty-gray;
+  colorSail: $color-sail;
+  colorManilla: $color-manilla;
+}
