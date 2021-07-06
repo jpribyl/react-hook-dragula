@@ -17,29 +17,145 @@ yarn add react-hook-dragula
 
 ## Usage
 
+### Initializing
+
+```jsx
+// Type for data which will be attached to dragula events
+// Yours will be different.
+type Fruit = {
+  itemId: number;
+  itemName: string;
+}
+
+type DraggableStore = {
+  fruit: Fruit;
+  fruits: Fruit[];
+  setFruits: Dispatch<SetStateAction<Fruit[]>>;
+}
+
+const {
+  Dragula,
+  DragulaContainer,
+  Draggable,
+  DragulaHandle,
+  useDraggableStore,
+  useInternalStore,
+  useDrake,
+} = initializeDragula<DraggableStore>();
+```
+
 ### Basic dragging
 
 ```jsx
+<Dragula>
+  <DragulaContainer>
+    <Draggable>
+      You can move these elements between these two containers
+    </Draggable>
+  </DragulaContainer>
+
+  <DragulaContainer>
+    <Draggable>
+      There's also the possibility of moving elements around in the
+      same container, changing their position
+    </Draggable>
+  </DragulaContainer>
+</Dragula>
 ```
 
 ### Customizing Dragula options
+
 ```jsx
+<Dragula
+  options={{ moves: ({ container }) => !!container?.children.length > 1 }}
+  onDrop={() => console.log('dragula drop event!')}
+>
+  <DragulaContainer>
+    <Draggable>
+      You can move these elements between these two containers
+    </Draggable>
+    <Draggable>
+      There's also the possibility of moving elements around in the
+      same container, changing their position
+    </Draggable>
+    <Draggable>
+      Anyting can be moved around. That includes images, links, or any other
+      nested elements.
+    </Draggable>
+  </DragulaContainer>
+
+  <DragulaContainer>
+    <Draggable>
+      This element can't be moved until a second one is added into it's container
+    </Draggable>
+  </DragulaContainer>
+</Dragula>
 ```
 
 
 ### Attaching data to Dragula store
 
 ```jsx
+const [fruits, setFruits] = useState<Fruit[]>([
+  { itemId: 1, itemName: 'apples' },
+  { itemId: 2, itemName: 'oranges' },
+  { itemId: 3, itemName: 'tomatoes' },
+]);
+
+<Dragula
+  onDrop={({ el, source }) => {
+      setFruits([...source.children].map(
+        ({ draggableStore: { fruit } }) => draggableStore,
+      ))
+
+      console.log('Dragual drop event for: ', el.draggableStore.fruit.itemName)
+  }}
+>
+  <DragulaContainer>
+    {fruits.map(fruit => (
+      <Draggable
+        key={fruit.id}
+        draggableStore={{
+          fruit,
+          fruits,
+          setFruits,
+        }}
+      >
+        <div>{fruit.itemName} - id: {fruit.id}</div>
+      </Draggable>
+    ))}
+  </DragulaContainer>
+</Dragula>
 ```
 
 ### Using Drake and InternalStore
 ```jsx
+<Dragula
+  options={{ moves: ({ el }) => !!el?.internalStore.isMouseOverHandle }}
+>
+  <DragulaContainer>
+    <Draggable>
+      <DragulaHandle>You can only drag this item by clicking on me!</DragulaHandle>
+      <div>You can move these elements between these two containers</div>
+    </Draggable>
+    <Draggable>
+      This item doesn't have a handle.. so it can't be moved at all!
+    </Draggable>
+  </DragulaContainer>
+</Dragula>
 ```
 
 
 ## API
 
-### `DragulaContainer` props:
+### Exported function
+#### `initializeDragula` usage:
+
+### Components
+#### `Dragula` props:
+#### `DragulaContainer` props:
+#### `Draggable` props:
+#### `DragulaHandle` props:
 
   onDrag,
   onDragEnd,
@@ -78,3 +194,8 @@ Event Name | Listener Arguments               | Event Description
 #### `Other attributes`  `HTMLProps<HTMLDivElement>, optional`
 - All other props passed into this component will be directly translated onto the react component
 - This allows you to add css classes or other handlers, see usage examples above
+
+### Custom Hooks
+#### `useDraggableStore`
+#### `useInternalStore`
+#### `useDrake`
