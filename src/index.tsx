@@ -7,7 +7,6 @@ import {
   SetStateAction,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from "react";
 import reactDragula from "react-dragula";
@@ -270,26 +269,10 @@ function useDragula<T>({
   dependencyList,
 }: UseDragulaParams<T>) {
   const [drake, setDrake] = useState<ReturnType<ExtendedDragula<T>>>();
-  const [mutationCount, setMutationCount] = useState(0);
-  const [drakeNode, setDragulaNode] = useState();
-  useEffect(() => {
-    const observer = new MutationObserver(() =>
-      setMutationCount(mutationCount + 1)
-    );
-
-    if (drakeNode) {
-      observer.observe(drakeNode!, { subtree: true, childList: true });
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [drakeNode, mutationCount]);
 
   const drakeRef = useCallback(
     (node) => {
       if (node) {
-        setDragulaNode(node);
         setDrake(
           (reactDragula as unknown as ExtendedDragula<T>)([...node.children], {
             ...options,
@@ -340,7 +323,7 @@ function useDragula<T>({
         );
       }
     },
-    [...dependencyList, mutationCount]
+    [...dependencyList]
   );
 
   return { drake, drakeRef };
@@ -351,7 +334,7 @@ function DragulaContainer({ ...props }: HTMLProps<HTMLDivElement>) {
 }
 
 type DragulaContainerProps<T> = {
-  options?: ExtendedDragulaNamedParamOptions<T>;
+  options?: ExtendedDragulaOptionsWithNamedParams<T>;
   dependencyList?: DependencyList;
 } & ExtendedDragulaAPI<T> &
   Omit<HTMLProps<HTMLDivElement>, "onDrop">;
