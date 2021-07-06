@@ -5,10 +5,10 @@
 Lightweight, strongly typed package with almost no dependencies. It uses
 Dragula and React Hooks to smoothly manage the DOM state. It also adds a
 context store which allows you to pass the data back and forth between
-`Dragula` and `React`.  take a look at the [example project]() or the [live
-demo]() of the example project.
+`Dragula` and `React`.  take a look at the [example project](https://github.com/jpribyl/react-hook-dragula/tree/main/example) or the [live
+demo](https://johnpribyl.com/react-hook-dragula/) of the example project.
 
-![Example of usage]()
+![Example of usage](/demo.gif)
 
 ## Install
 ```
@@ -20,8 +20,7 @@ yarn add react-hook-dragula
 ### Initializing
 
 ```jsx
-// Type for data which will be attached to dragula events
-// Yours will be different.
+// Typing for data which will be attached to dragula events. Yours will be different.
 type Fruit = {
   itemId: number;
   itemName: string;
@@ -148,54 +147,151 @@ const [fruits, setFruits] = useState<Fruit[]>([
 
 ## API
 
+### Extended typings
+Each `<Draggable/>` node has a `draggableStore` and an `internalStore` object attached to it:
+```tsx
+type InternalStore = {
+  isMouseOverHandle: boolean;
+};
+
+type DraggableStore<T> = T;
+
+type ExtendedDrakeElement<T> = Element & {
+  draggableStore: DraggableStore<T>;
+  internalStore: InternalStore;
+};
+
+type ExtendedDrakeSource<T> = Element & { children: ExtendedDrakeElement<T>[] };
+```
+----
+
 ### Exported function
-#### `initializeDragula` usage:
+#### `initializeDragula` - - - returns `object` with entries:
+```jsx
+Dragula: (props: DragulaContainerProps<T>) => <Dragula<T> {...props} />
+```
+```jsx
+DragulaContainer: (props: HTMLProps<HTMLDivElement>) => (<DragulaContainer {...props} />)
+```
+```jsx
+Draggable: (props: DraggableProps<T>) => <Draggable<T> {...props} />
+```
+```jsx
+DragulaHandle: (props: DragulaHandleProps) => <DragulaHandle {...props} />
+```
+```jsx
+useDraggableStore: () => useDraggableStore<T>()
+```
+```jsx
+useInternalStore: () => useInternalStore()
+```
+```jsx
+useDrake: () => useDrake()
+```
 
-### Components
-#### `Dragula` props:
-#### `DragulaContainer` props:
-#### `Draggable` props:
-#### `DragulaHandle` props:
+----
 
-  onDrag,
-  onDragEnd,
-  onDrop,
-  onCancel,
-  onRemove,
-  onShadow,
-  onOver,
-  onOut,
-  onCloned,
-  options = {},
-  dependencyList = [],
-  ...props
-#### `options` `Object, optional`
-- Sets [Dragula options](https://github.com/bevacqua/dragula#usage). 
-- Default: Same as Dragula
+### Component props
 
-#### `on<Event>` `Function, optional`:
-- Sets [Drake onEvent](https://github.com/bevacqua/dragula/blob/master/readme.markdown#drakeon-events)
-- Accepts all the same handlers as `Dragula`
-- Params are all passed through with names
-- For example: `<DragulaContainer onDrop={({ sibling }) => console.log( sibling )} />`
+#### For the following, we have typings:
+```tsx
+OnEventProps<T = typeof DraggableStore> {
+  clone: ExtendedDrakeElement<T>,
+  container: Element,
+  el: ExtendedDrakeElement<T>,
+  original: ExtendedDrakeElement<T>,
+  sibling: ExtendedDrakeElement<T>,
+  source: ExtendedDrakeSource<T>,
+  target: ExtendedDrakeElement<T>,
+  type: 'mirror' | 'copy',
+}
+```
 
-Event Name | Listener Arguments               | Event Description
------------|----------------------------------|-------------------------------------------------------------------------------------
-`drag`     | `el, source`                     | `el` was lifted from `source`
-`dragend`  | `el`                             | Dragging event for `el` ended with either `cancel`, `remove`, or `drop`
-`drop`     | `el, target, source, sibling`    | `el` was dropped into `target` before a `sibling` element, and originally came from `source`
-`cancel`   | `el, container, source`          | `el` was being dragged but it got nowhere and went back into `container`, its last stable parent; `el` originally came from `source`
-`remove`   | `el, container, source`          | `el` was being dragged but it got nowhere and it was removed from the DOM. Its last stable parent was `container`, and originally came from `source`
-`shadow`   | `el, container, source`          | `el`, _the visual aid shadow_, was moved into `container`. May trigger many times as the position of `el` changes, even within the same `container`; `el` originally came from `source`
-`over`     | `el, container, source`          | `el` is over `container`, and originally came from `source`
-`out`      | `el, container, source`          | `el` was dragged out of `container` or dropped, and originally came from `source`
-`cloned`   | `clone, original, type`          | DOM element `original` was cloned as `clone`, of `type` _(`'mirror'` or `'copy'`)_. Fired for mirror images and when `copy: true`
+----
 
-#### `Other attributes`  `HTMLProps<HTMLDivElement>, optional`
-- All other props passed into this component will be directly translated onto the react component
-- This allows you to add css classes or other handlers, see usage examples above
+```jsx
+<Dragula
+  options={{
+    isContainer: ({ el }) => false,
+    moves: ({ el, source, handle, sibling }) => true,
+    accepts: ({ el, target, source, sibling }) => true,
+    invalid: ({ el, handle }) => true,
+    direction: "vertical",
+    copy: false,
+    copySortSource: false,
+    revertOnSpill: false,
+    removeOnSpill: false,
+    mirrorContainer: document.body,
+    ignoreInputTextSelection: true,
+    slideFactorX: 0,
+    slideFactorY: 0,
+  }}
+  onDrag={({ el, source }) => {}}
+  onDragEnd={({ el }) => {}}
+  onDrop={({ el, target, source, sibling }) => {}}
+  onCancel={({ el, container, source }) => {}}
+  onRemove={({ el, container, source }) => {}}
+  onShadow={({ el, container, source }) => {}}
+  onOver={({ el, container, source }) => {}}
+  onOut={({ el, container, source }) => {}}
+  onCloned={({ clone, original, type }) => {}}
+  dependencyList={[]}
+/>
+```
+See [Dragula configuration](https://github.com/bevacqua/dragula#usage) for more info
+
+----
+
+```jsx
+<DragulaContainer {...props} />
+```
+
+- `HTMLProps<HTMLDivElement>` optional
+  - This component has no special props
+  - Anything passed to it will be forwarded to a `<div />` element
+
+----
+
+```jsx
+<Draggable
+  draggableStore={{}}
+  {...props}
+/>
+```
+
+- `draggableStore` Object, required
+  - Type of store must match `<T>` from when you initialized `const { Draggable } = initializeDragula<T>()`
+
+- `HTMLProps<HTMLDivElement>` optional
+  - Anything else passed to it will be forwarded to a `<div />` element
+
+----
+
+```jsx
+<DragulaHandle {...props} />
+```
+
+- `HTMLProps<HTMLDivElement>` optional
+  - This component has no special props
+  - Anything passed to it will be forwarded to a `<div />` element
+
+----
 
 ### Custom Hooks
-#### `useDraggableStore`
-#### `useInternalStore`
-#### `useDrake`
+```ts
+  useDraggableStore: () => typeof DraggableStore<T>
+```
+
+```ts
+  useInternalStore: () => { isMouseOverHandle: boolean; }
+```
+
+```ts
+  // If Drake type & arrow functions were generic, then it would be this:
+  // useDrake: <T>() => Drake<ExtendedDrakeElement<T>>;
+  // Since they're not generic, we wind up with:
+  useDrake: () => ReturnType<ExtendedDragula<any>>;
+```
+
+## Acknowledgements
+- Big thanks to all the work that Nicolás Bevacqua has done to build and maintain `Dragula` !
