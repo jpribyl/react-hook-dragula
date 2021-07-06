@@ -1,6 +1,6 @@
 {
   "name": "react-hook-dragula",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Provides named parameters and strong typing + declarative usage to dragula within React.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

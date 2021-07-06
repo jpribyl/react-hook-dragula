@@ -1,3 +1,4 @@
+import { DragulaOptions, Drake } from "dragula";
 import {
   createContext,
   DependencyList,
@@ -10,7 +11,6 @@ import {
   useState,
 } from "react";
 import reactDragula from "react-dragula";
-import { DragulaOptions, Drake } from "dragula";
 
 type InternalStore = {
   isMouseOverHandle: boolean;
@@ -121,7 +121,7 @@ type ExtendedDragulaOptions<T> = {
   ) => boolean;
 } & Omit<DragulaOptions, "isContainer" | "moves" | "accepts" | "invalid">;
 
-type ExtendedDragulaNamedParamOptions<T> = {
+type ExtendedDragulaOptionsWithNamedParams<T> = {
   isContainer?: ({ el }: { el?: ExtendedDrakeElement<T> }) => boolean;
   moves?: ({
     el,
@@ -154,7 +154,7 @@ type ExtendedDragulaNamedParamOptions<T> = {
   }) => boolean;
 } & Omit<DragulaOptions, "isContainer" | "moves" | "accepts" | "invalid">;
 
-type OnAction<T> = {
+type ExtendedDragulaOnAction<T> = {
   on: ((
     event: "drag",
     listener: (
@@ -194,50 +194,16 @@ type OnAction<T> = {
 };
 
 type ExtendedDragula<T> = {
-  (containers: Element[], options: ExtendedDragulaOptions<T>): OnAction<T> &
-    Omit<Drake, "on">;
+  (
+    containers: Element[],
+    options: ExtendedDragulaOptions<T>
+  ): ExtendedDragulaOnAction<T> & Omit<Drake, "on">;
 };
 
 type UseDragulaParams<T> = {
-  options: ExtendedDragulaNamedParamOptions<T>;
+  options: ExtendedDragulaOptionsWithNamedParams<T>;
   dependencyList: DependencyList;
 } & ExtendedDragulaAPI<T>;
-
-type DragulaContainerProps<T> = {
-  options?: ExtendedDragulaNamedParamOptions<T>;
-  dependencyList?: DependencyList;
-} & ExtendedDragulaAPI<T> &
-  Omit<HTMLProps<HTMLDivElement>, "onDrop">;
-
-type DraggableProps<T> = {
-  draggableStore: DraggableStore<T>;
-  shouldHide?: ({
-    draggableStore,
-    internalStore,
-    drake,
-  }: {
-    draggableStore: DraggableStore<T>;
-    internalStore: InternalStore;
-    drake: ReturnType<ExtendedDragula<T>>;
-  }) => boolean;
-} & HTMLProps<HTMLDivElement>;
-
-type DragulaHandleProps<T> = {
-  shouldHide?: ({
-    draggableStore,
-    internalStore,
-    drake,
-  }: {
-    draggableStore: DraggableStore<T>;
-    internalStore: InternalStore;
-    drake: ReturnType<ExtendedDragula<T>>;
-  }) => boolean;
-} & HTMLProps<HTMLDivElement>;
-
-type DraggableContextType<T> = {
-  draggableStore: DraggableStore<T>;
-  setDraggableStore: Dispatch<SetStateAction<DraggableStore<T>>>;
-};
 
 type InternalContextType = {
   internalStore: InternalStore;
@@ -254,25 +220,16 @@ const InternalContext = createContext<InternalContextType>(undefined!);
 
 function useDraggableStore<
   T = "draggableStore of unknown type T. Please specify type when calling useDraggableStore<T>"
->(): DraggableContextType<T> {
+>(): DraggableStore<T> {
   return useContext(DraggableContext);
 }
+const useInternalStore = () => useContext(InternalContext);
+const useDrake = () => useContext(DrakeContext);
 
-function useInternalStore() {
-  return useContext(InternalContext);
-}
-
-function useDrake() {
-  return useContext(DrakeContext);
-}
-
-function Draggable<T>({
-  draggableStore: initialElementStore,
-  shouldHide = () => false,
-  ...props
-}: DraggableProps<T>) {
-  const drake = useContext(DrakeContext);
-  const [draggableStore, setDraggableStore] = useState<T>(initialElementStore);
+type DraggableProps<T> = {
+  draggableStore: DraggableStore<T>;
+} & HTMLProps<HTMLDivElement>;
+function Draggable<T>({ draggableStore, ...props }: DraggableProps<T>) {
   const [internalStore, setInternalStore] = useState<InternalStore>({
     isMouseOverHandle: false,
   });
@@ -290,10 +247,8 @@ function Draggable<T>({
     [draggableStore, internalStore]
   );
 
-  if (shouldHide({ drake, internalStore, draggableStore })) return null;
-
   return (
-    <DraggableContext.Provider value={{ draggableStore, setDraggableStore }}>
+    <DraggableContext.Provider value={draggableStore}>
       <InternalContext.Provider value={{ internalStore, setInternalStore }}>
         <div ref={itemRef} {...props} />
       </InternalContext.Provider>
@@ -323,7 +278,7 @@ function useDragula<T>({
     );
 
     if (drakeNode) {
-      observer.observe(drakeNode!, { childList: true });
+      observer.observe(drakeNode!, { subtree: true, childList: true });
     }
 
     return () => {
@@ -395,6 +350,11 @@ function DragulaContainer({ ...props }: HTMLProps<HTMLDivElement>) {
   return <div {...props} />;
 }
 
+type DragulaContainerProps<T> = {
+  options?: ExtendedDragulaNamedParamOptions<T>;
+  dependencyList?: DependencyList;
+} & ExtendedDragulaAPI<T> &
+  Omit<HTMLProps<HTMLDivElement>, "onDrop">;
 function Dragula<
   T = "draggableStore of unknown type T. Please specify type when rendering <DragulaContainer<T> {...props} />"
 >({
@@ -432,16 +392,12 @@ function Dragula<
   );
 }
 
-function DragulaHandle<T>({
-  shouldHide = () => false,
-  ...props
-}: DragulaHandleProps<T>) {
+type DragulaHandleProps = HTMLProps<HTMLDivElement>;
+function DragulaHandle({ ...props }: DragulaHandleProps) {
   const drake = useDrake();
-  const { draggableStore } = useDraggableStore<T>();
   const { internalStore, setInternalStore } = useInternalStore();
 
   if (!drake) return null;
-  if (shouldHide({ drake, internalStore, draggableStore })) return <></>;
 
   return (
     <div
@@ -464,9 +420,7 @@ export default function initializeDragula<T>() {
       <DragulaContainer {...props} />
     ),
     Draggable: (props: DraggableProps<T>) => <Draggable<T> {...props} />,
-    DragulaHandle: (props: DragulaHandleProps<T>) => (
-      <DragulaHandle<T> {...props} />
-    ),
+    DragulaHandle: (props: DragulaHandleProps) => <DragulaHandle {...props} />,
     useDraggableStore: () => useDraggableStore<T>(),
     useInternalStore: () => useInternalStore(),
     useDrake: () => useDrake(),
