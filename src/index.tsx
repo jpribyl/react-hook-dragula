@@ -12,20 +12,22 @@ import {
 } from "react";
 import reactDragula from "react-dragula";
 
-type InternalStore = {
+export type InternalStore = {
   isMouseOverHandle: boolean;
 };
 
-type DraggableStore<T> = T;
+export type DraggableStore<T> = T;
 
-type ExtendedDrakeElement<T> = Element & {
+export type ExtendedDrakeElement<T> = Element & {
   draggableStore: DraggableStore<T>;
   internalStore: InternalStore;
 };
 
-type ExtendedDrakeSource<T> = Element & { children: ExtendedDrakeElement<T>[] };
+export type ExtendedDrakeSource<T> = Element & {
+  children: ExtendedDrakeElement<T>[];
+};
 
-type ExtendedDragulaAPI<T> = {
+export type ExtendedDragulaAPI<T> = {
   onDrag?: ({
     el,
     source,
@@ -101,7 +103,7 @@ type ExtendedDragulaAPI<T> = {
   }) => void;
 };
 
-type ExtendedDragulaOptions<T> = {
+export type ExtendedDragulaOptions<T> = {
   isContainer?: (el?: ExtendedDrakeElement<T>) => boolean;
   moves?: (
     el?: ExtendedDrakeElement<T>,
@@ -121,7 +123,7 @@ type ExtendedDragulaOptions<T> = {
   ) => boolean;
 } & Omit<DragulaOptions, "isContainer" | "moves" | "accepts" | "invalid">;
 
-type ExtendedDragulaOptionsWithNamedParams<T> = {
+export type ExtendedDragulaOptionsWithNamedParams<T> = {
   isContainer?: ({ el }: { el?: ExtendedDrakeElement<T> }) => boolean;
   moves?: ({
     el,
@@ -154,7 +156,7 @@ type ExtendedDragulaOptionsWithNamedParams<T> = {
   }) => boolean;
 } & Omit<DragulaOptions, "isContainer" | "moves" | "accepts" | "invalid">;
 
-type ExtendedDragulaOnAction<T> = {
+export type ExtendedDragulaOnAction<T> = {
   on: ((
     event: "drag",
     listener: (
@@ -193,19 +195,19 @@ type ExtendedDragulaOnAction<T> = {
     ) => ReturnType<ExtendedDragula<T>>);
 };
 
-type ExtendedDragula<T> = {
+export type ExtendedDragula<T> = {
   (
     containers: Element[],
     options: ExtendedDragulaOptions<T>
   ): ExtendedDragulaOnAction<T> & Omit<Drake, "on">;
 };
 
-type UseDragulaParams<T> = {
+export type UseDragulaParams<T> = {
   options: ExtendedDragulaOptionsWithNamedParams<T>;
   dependencyList: DependencyList;
 } & ExtendedDragulaAPI<T>;
 
-type InternalContextType = {
+export type InternalContextType = {
   internalStore: InternalStore;
   setInternalStore: Dispatch<SetStateAction<InternalStore>>;
 };
@@ -226,7 +228,7 @@ function useDraggableStore<
 const useInternalStore = () => useContext(InternalContext);
 const useDrake = () => useContext(DrakeContext);
 
-type DraggableProps<T> = {
+export type DraggableProps<T> = {
   draggableStore: DraggableStore<T>;
 } & HTMLProps<HTMLDivElement>;
 function Draggable<T>({ draggableStore, ...props }: DraggableProps<T>) {
@@ -271,10 +273,10 @@ function useDragula<T>({
 }: UseDragulaParams<T>) {
   const [drake, setDrake] = useState<ReturnType<ExtendedDragula<T>>>();
   const [mutationCount, setMutationCount] = useState(0);
-  const [drakeNode, setDragulaNode] = useState();
+  const [drakeNode, setDrakeNode] = useState();
   useEffect(() => {
     const observer = new MutationObserver(() =>
-      setMutationCount(mutationCount + 1)
+      setMutationCount((prevMutationCount) => prevMutationCount + 1)
     );
 
     if (drakeNode) {
@@ -284,12 +286,12 @@ function useDragula<T>({
     return () => {
       observer.disconnect();
     };
-  }, [drakeNode, mutationCount]);
+  }, [drakeNode]);
 
   const drakeRef = useCallback(
     (node) => {
       if (node) {
-        setDragulaNode(node);
+        setDrakeNode(node);
         setDrake(
           (reactDragula as unknown as ExtendedDragula<T>)([...node.children], {
             ...options,
@@ -350,7 +352,7 @@ function DragulaContainer({ ...props }: HTMLProps<HTMLDivElement>) {
   return <div {...props} />;
 }
 
-type DragulaContainerProps<T> = {
+export type DragulaContainerProps<T> = {
   options?: ExtendedDragulaOptionsWithNamedParams<T>;
   dependencyList?: DependencyList;
 } & ExtendedDragulaAPI<T> &
@@ -392,7 +394,7 @@ function Dragula<
   );
 }
 
-type DragulaHandleProps = HTMLProps<HTMLDivElement>;
+export type DragulaHandleProps = HTMLProps<HTMLDivElement>;
 function DragulaHandle({ ...props }: DragulaHandleProps) {
   const drake = useDrake();
   const { internalStore, setInternalStore } = useInternalStore();
